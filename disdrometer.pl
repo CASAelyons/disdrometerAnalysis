@@ -19,6 +19,8 @@ use File::Path;
 use File::Copy;
 use DateTime;
 use CGI;
+use GD;
+use GD::Text;
 use GD::Graph;
 use GD::Graph::lines;
 use Fcntl;
@@ -59,24 +61,31 @@ our $params;
 
 create_disdrometer_time_series( @filelist );
 &graph_data;
-#my $outURL ="https://emmy10.casa.umass.edu/disdrometer/" . $pngname;
+my $outURL ="https://emmy10.casa.umass.edu/disdrometer/" . $pngname;
 print $params -> header(
-    #-type => 'text/html',
-    -type => 'image/png',
+    -type => 'text/html',
+    #-type => 'image/png',
     -access_control_allow_origin => '*',
     -access_control_allow_headers => 'content-type,X-Requested-With',
     -access_control_allow_methods => 'GET,OPTIONS',
     );
 
-select(STDOUT); $| = 1;   #unbuffer STDOUT
-#print "Content-type: image/png\n\n";
-
-open (IMAGE, '<', $outpngname);
-print <IMAGE>;
-close IMAGE;
-#our $outURL = "test";
-#print $outURL;
-#print "test";
+#select(STDOUT); $| = 1;   #unbuffer STDOUT
+#open (IMAGE, '<', $outpngname);
+#print <IMAGE>;
+#close IMAGE;
+print("<head><style>");
+print("body{
+font-family: Tahoma, Arial, Helvetica, sans-serif;
+color: 000000
+}");
+print("</style></head>");
+print("<BODY>");
+print("<center><img src=$outURL>");
+print("<br>");
+print("</center>");
+print("</BODY>");
+print("</HTML>");
 exit;
 
 sub create_disdrometer_time_series {
@@ -159,9 +168,15 @@ sub graph_data {
 
     
     #set the fonts
-    #my $fontloc = "/usr/share/fonts/truetype/freefont/FreeSans.ttf";
-    #my $font = "/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf";
-    my $fontloc = '/usr/share/fonts/truetype/freefont/FreeSans.ttf';
+    my $fontloc = '/var/www/html/fonts/truetype/freefont/FreeSans.ttf';
+    
+    #$graph->set_title_font(GD::gdLargeFont, 16);
+    #$graph->set_x_label_font(GD::gdSmallFont, 12);
+    #$graph->set_y_label_font(GD::gdSmallFont, 12);
+    #$graph->set_x_axis_font(GD::gdSmallFont, 10);
+    #$graph->set_y_axis_font(GD::gdSmallFont, 10);
+    #$graph->set_legend_font(GD::gdSmallFont, 10);
+    
     $graph->set_title_font($fontloc, 16);
     $graph->set_x_label_font($fontloc, 12);
     $graph->set_y_label_font($fontloc, 12);
@@ -195,7 +210,7 @@ sub graph_data {
     $outpngname = $OUTPUT_DIR . $pngname;
     my $gd = $graph->plot(\@dataset) or die $graph->error;
     open(IMG, '>', $outpngname) or die $!;
-    binmode IMG;
+    #binmode IMG;
     print IMG $gd->png;
 }
 
